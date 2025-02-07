@@ -5,23 +5,64 @@ type WasmGameOfLifeProps = {
   wasm: any;
 }
 export const WasmGameOfLife = ({ wasm } : WasmGameOfLifeProps) => {
-  const [matrix, setMatrix] = useState<number[][]>([]);
+  const size = 100;
+
+  const [matrix, setMatrix] = useState<number[][]>(Array.from({ length: size }, (_, row) => 
+    Array.from({ length: size }, (_, col) => 
+      (row === 10 && col === 14) || 
+      (row === 11 && col === 15) || 
+      (row === 12 && (col === 13 || col === 14 || col === 15)) ? 1 : 0
+    ))
+
+  );
+  const measureMemory = () => {
+    if (performance.memory) {
+      console.log("JS Heap Used:", performance.memory.usedJSHeapSize);
+      console.log("JS Heap Total:", performance.memory.totalJSHeapSize);
+    }
+  };
 
   useEffect(() => {
     if (!wasm) return;
-    const jsMatrix = [
-      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-      [0, 0, 0, 1, 1, 1, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    ];
 
+    // const flatMatrix = new Uint8Array(size * size);
+    // for (let i = 0; i < size; i++) {
+    //   for (let j = 0; j < size; j++) {
+    //     flatMatrix[i * size + j] = matrix[i][j];
+    //   }
+    // }
+
+    // Allocate memory in Wasm and copy the flat matrix
+    // const wasmMemory = new Uint8Array(wasm.memory.buffer);
+    // const wasmMatrixPtr = wasm._malloc(size * size);
+    // wasmMemory.set(flatMatrix, wasmMatrixPtr);
+
+    // const start = performance.now();
+    // wasm.gameOfLifeLoop(wasmMatrixPtr, size, 10000);
+    // const end = performance.now();
+    // console.log(`WASM Game of Life took ${end - start}ms to update the board`);
+
+    // // Copy the result back to JavaScript
+    // const updatedFlatMatrix = wasmMemory.slice(wasmMatrixPtr, wasmMatrixPtr + size * size);
+    // const updatedMatrix: number[][] = [];
+    // for (let i = 0; i < size; i++) {
+    //   const row: number[] = [];
+    //   for (let j = 0; j < size; j++) {
+    //     row.push(updatedFlatMatrix[i * size + j]);
+    //   }
+    //   updatedMatrix.push(row);
+    // }
+
+    // // Free the allocated memory in Wasm
+    // wasm._free(wasmMatrixPtr);
+    // setMatrix(updatedMatrix);
+    const size = 20;
+    const jsMatrix = Array.from({ length: size }, (_, row) => 
+      Array.from({ length: size }, (_, col) => 
+        (row === 10 && col === 14) || 
+        (row === 11 && col === 15) || 
+        (row === 12 && (col === 13 || col === 14 || col === 15)) ? 1 : 0
+      ));
     setMatrix(jsMatrix);
   }, [wasm]);
 
@@ -35,9 +76,14 @@ export const WasmGameOfLife = ({ wasm } : WasmGameOfLifeProps) => {
       wasmMatrix.push_back(wasmRow);
     }
 
+    measureMemory();
     const start = performance.now();
-    wasm.gameOfLife(wasmMatrix);
+    // for (let i = 0; i < 100000; i++) {
+      wasm.gameOfLife(wasmMatrix);
+    // }
+    // wasm.gameOfLifeLoop(wasmMatrix, 100000);
     const end = performance.now();
+    measureMemory();
     console.log(`WASM Game of Life took ${end - start}ms to update the board`);
 
     const updatedMatrix: number[][] = [];

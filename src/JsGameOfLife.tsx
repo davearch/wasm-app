@@ -2,23 +2,29 @@ import { useState } from "react";
 import { gameOfLife } from "./gameOfLife"; // Import the TS implementation
 
 export const GameOfLifeBoard = () => {
-  const [matrix, setMatrix] = useState<number[][]>([
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-    [0, 0, 0, 1, 1, 1, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  ]);
+  const size = 20;
+  const measureMemory = () => {
+    if (performance.memory) {
+      console.log("JS Heap Used:", performance.memory.usedJSHeapSize);
+      console.log("JS Heap Total:", performance.memory.totalJSHeapSize);
+    }
+  };
+
+  const [matrix, setMatrix] = useState<number[][]>(Array.from({ length: size }, (_, row) => 
+    Array.from({ length: size }, (_, col) => 
+      (row === 10 && col === 14) || 
+      (row === 11 && col === 15) || 
+      (row === 12 && (col === 13 || col === 14 || col === 15)) ? 1 : 0
+    )));
 
   const updateBoard = () => {
+    measureMemory();
     const start = performance.now(); // start timing
-    setMatrix((prevMatrix) => gameOfLife(prevMatrix)); // Apply TS Game of Life
+    // for (let i = 0; i < 100000; i++) {
+      setMatrix((prevMatrix) => gameOfLife(prevMatrix)); // Apply TS Game of Life
+    // }
     const end = performance.now(); // end timing
+    measureMemory();
     console.log(`TypeScript Game of Life took ${end - start}ms to update the board`);
   };
 
