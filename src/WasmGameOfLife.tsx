@@ -39,8 +39,8 @@ export const WasmGameOfLife = ({ wasm } : WasmGameOfLifeProps) => {
     const start = performance.now();
     wasm.optimizedGameOfLife(memoryPointer, size);
     const end = performance.now();
-    console.log(`Wasm Game of Life too ${end - start}ms`);
-    
+    console.log(`Wasm Game of Life took ${end - start}ms`);
+
     setWasmMemory(new Int32Array(wasm.HEAP32.buffer, memoryPointer, totalCells));
   }
 
